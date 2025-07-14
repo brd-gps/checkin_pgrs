@@ -1,116 +1,54 @@
 
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Check-in Fotográfico</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            backgroud-color: #f0f0f0;
-        }
-        #camera-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            aspect-ratio: 9/16;
-            margin-top: 20px;
-            background-color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #video, #frame-overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        #button-container {
-    margin-top: 20px;
-    display: flex;
-    gap: 20px;
-    justify-content: center;
+<meta charset="utf-8"/>
+<title>Check-in Fotográfico</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+#moldura {
+  width: 400px;
+  height: 300px;
+  border: 5px solid #ccc;
+  overflow: hidden;
+  position: relative;
 }
 
-#capture-btn, #send-btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
-        #canvas {
-            display: none;
-        }
-    </style>
+
+#canvas {
+  display: none;
+}
+</style>
 </head>
 <body>
-    <h2>Check-in Fotográfico</h2>
-    <div id="camera-container">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas" style="display:none;"></canvas>
-        <!-- Moldura será inserida manualmente aqui -->
-        <img id="frame-overlay" src="moldura.png" alt="Moldura" />
-    </div>
-    <br>
-    <div id="button-container">
-    <button id="capture-btn">📸 Capturar Foto</button>
-    <button id="send-btn" disabled>📤 Enviar Foto</button>
+<h2>Check-in Fotográfico</h2>
+<div id="camera-container">
+<video autoplay="" id="video" playsinline=""></video>
+<canvas id="canvas" style="display:none;"></canvas>
+<!-- Moldura será inserida manualmente aqui -->
+<img alt="Moldura" id="frame-overlay" src="moldura.png"/>
 </div>
+<br/>
+<div id="button-container">
+<button id="capture-btn">📸 Capturar Foto</button>
+<button disabled="" id="send-btn">📤 Enviar Foto</button>
+</div>
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const captureBtn = document.getElementById('capture-btn');
-        const sendBtn = document.getElementById('send-btn');
-
-        // Acessar a câmera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                alert("Erro ao acessar a câmera: " + err);
-            });
-
-        // Capturar a imagem
-        captureBtn.onclick = () => {
-    const width = video.offsetWidth;
-    const height = video.offsetHeight;
-
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, width, height);
-
-    const frame = document.getElementById('frame-overlay');
-    ctx.drawImage(frame, 0, 0, width, height);
-
-    video.style.display = 'none';
-    canvas.style.display = 'block';
-    sendBtn.disabled = false;
-};
-
-        // Enviar a imagem para o servidor (endpoint fictício)
-        sendBtn.onclick = () => {
-            const imageData = canvas.toDataURL('image/png');
-            fetch('https://seu-endpoint.com/upload', {
-                method: 'POST',
-                body: JSON.stringify({ image: imageData }),
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(response => alert("Foto enviada com sucesso!"))
-            .catch(error => alert("Erro ao enviar a foto: " + error));
-        };
-    </script>
+function captureImage() {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+}
+</script>
 </body>
 </html>
