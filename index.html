@@ -23,9 +23,7 @@
       aspect-ratio: 9/16;
       margin-top: 20px;
       background-color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      overflow: hidden;
     }
     #video, #frame-overlay {
       position: absolute;
@@ -65,21 +63,28 @@
   <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
     const captureBtn = document.getElementById('capture-btn');
     const sendBtn = document.getElementById('send-btn');
-    const context = canvas.getContext('2d');
 
-    // Solicita acesso à câmera
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-      .then((stream) => {
-        video.srcObject = stream;
-      })
-      .catch((err) => {
-        console.error('Erro ao acessar a câmera:', err);
-        alert('Erro ao acessar a câmera. Verifique as permissões do navegador.');
-      });
+    // Requisição da câmera frontal
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user', // Força câmera frontal
+        width: { ideal: 720 }, // Resolução proporcional à moldura
+        height: { ideal: 1280 }
+      },
+      audio: false
+    })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      console.error('Erro ao acessar a câmera:', err);
+      alert('Erro ao acessar a câmera. Verifique as permissões do navegador.');
+    });
 
-    // Captura a foto
+    // Captura da imagem com ajuste proporcional ao vídeo
     captureBtn.addEventListener('click', () => {
       const largura = video.videoWidth;
       const altura = video.videoHeight;
@@ -89,7 +94,6 @@
 
       context.drawImage(video, 0, 0, largura, altura);
 
-      // Aqui você pode mostrar a imagem capturada ou ativar o botão de envio
       canvas.style.display = 'block';
       sendBtn.disabled = false;
     });
