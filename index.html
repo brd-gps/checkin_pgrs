@@ -35,13 +35,18 @@
             height: 100%;
             object-fit: contain;
         }
-        #capture-btn, #send-btn {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
+        #button-container {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+#capture-btn, #send-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
         #canvas {
             display: none;
         }
@@ -56,8 +61,10 @@
         <img id="frame-overlay" src="moldura.png" alt="Moldura" />
     </div>
     <br>
+    <div id="button-container">
     <button id="capture-btn">📸 Capturar Foto</button>
     <button id="send-btn" disabled>📤 Enviar Foto</button>
+</div>
 
     <script>
         const video = document.getElementById('video');
@@ -76,14 +83,22 @@
 
         // Capturar a imagem
         captureBtn.onclick = () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            video.style.display = 'none';
-            canvas.style.display = 'block';
-            sendBtn.disabled = false;
-        };
+    const width = video.offsetWidth;
+    const height = video.offsetHeight;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, width, height);
+
+    const frame = document.getElementById('frame-overlay');
+    ctx.drawImage(frame, 0, 0, width, height);
+
+    video.style.display = 'none';
+    canvas.style.display = 'block';
+    sendBtn.disabled = false;
+};
 
         // Enviar a imagem para o servidor (endpoint fictício)
         sendBtn.onclick = () => {
