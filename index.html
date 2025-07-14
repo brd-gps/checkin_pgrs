@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<title>Check-in Fotográfico</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<style>
+  <meta charset="utf-8" />
+  <title>Check-in Fotográfico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
     body {
       font-family: sans-serif;
       text-align: center;
@@ -51,31 +50,49 @@
   </style>
 </head>
 <body>
-<h2>Check-in Fotográfico</h2>
-<div id="camera-container">
-<video autoplay="" id="video" playsinline=""></video>
-<canvas id="canvas" style="display:none;"></canvas>
-<img alt="Moldura" id="frame-overlay" src="moldura.png"/>
-</div>
-<br/>
-<div id="button-container">
-<button id="capture-btn">📸 Capturar Foto</button>
-<button disabled="" id="send-btn">📤 Enviar Foto</button>
-</div>
-<script>
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const context = canvas.getContext('2d');
+  <h2>Check-in Fotográfico</h2>
+  <div id="camera-container">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <img id="frame-overlay" src="moldura.png" alt="Moldura" />
+  </div>
+  <br />
+  <div id="button-container">
+    <button id="capture-btn">📸 Capturar Foto</button>
+    <button id="send-btn" disabled>📤 Enviar Foto</button>
+  </div>
 
-document.getElementById('capturar').addEventListener('click', () => {
-  const largura = video.videoWidth;
-  const altura = video.videoHeight;
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const sendBtn = document.getElementById('send-btn');
+    const context = canvas.getContext('2d');
 
-  canvas.width = largura;
-  canvas.height = altura;
+    // Solicita acesso à câmera
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then((stream) => {
+        video.srcObject = stream;
+      })
+      .catch((err) => {
+        console.error('Erro ao acessar a câmera:', err);
+        alert('Erro ao acessar a câmera. Verifique as permissões do navegador.');
+      });
 
-  context.drawImage(video, 0, 0, largura, altura);
-});
-</script>
+    // Captura a foto
+    captureBtn.addEventListener('click', () => {
+      const largura = video.videoWidth;
+      const altura = video.videoHeight;
+
+      canvas.width = largura;
+      canvas.height = altura;
+
+      context.drawImage(video, 0, 0, largura, altura);
+
+      // Aqui você pode mostrar a imagem capturada ou ativar o botão de envio
+      canvas.style.display = 'block';
+      sendBtn.disabled = false;
+    });
+  </script>
 </body>
 </html>
