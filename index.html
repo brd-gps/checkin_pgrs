@@ -7,29 +7,99 @@
 <title>Check-in Fotográfico</title>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <style>
-#moldura {
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            backgroud-color: #f0f0f0;
+        }
+        #camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 9/16;
+            margin-top: 20px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #video, #frame-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        #button-container {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+#capture-btn, #send-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+        #canvas {
+            display: none;
+        }
+    </style>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: sans-serif;
+  background-color: #f0f0f0;
+}
+
+#container {
+  position: relative;
   width: 100%;
   max-width: 400px;
-  aspect-ratio: 4 / 3;
-  border: 5px solid #ccc;
-  overflow: hidden;
-  margin: auto;
-  position: relative;
+  aspect-ratio: 3 / 4;
+  margin-top: 20px;
 }
+
 #video {
+  position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 1;
 }
+
+#moldura {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
 #canvas {
   display: none;
 }
-</style>
-</head>
+
+#botoes {
+  margin-top: 20px;
+}
+</style></head>
 <body>
 <h2>Check-in Fotográfico</h2>
 <div id="camera-container">
-<video autoplay="" id="video" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover;"></video>
+<video autoplay="" id="video" playsinline=""></video>
 <canvas id="canvas" style="display:none;"></canvas>
 <!-- Moldura será inserida manualmente aqui -->
 <img alt="Moldura" id="frame-overlay" src="moldura.png"/>
@@ -40,14 +110,72 @@
 <button disabled="" id="send-btn">📤 Enviar Foto</button>
 </div>
 <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('capture-btn');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Acessar a câmera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                alert("Erro ao acessar a câmera: " + err);
+            });
+
+        // Capturar a imagem
+        captureBtn.onclick = () => {
+    const width = video.offsetWidth;
+    const height = video.offsetHeight;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, width, height);
+
+    const frame = document.getElementById('frame-overlay');
+    ctx.drawImage(frame, 0, 0, width, height);
+
+    video.style.display = 'none';
+    canvas.style.display = 'block';
+    sendBtn.disabled = false;
+};
+
+        // Enviar a imagem para o servidor (endpoint fictício)
+        sendBtn.onclick = () => {
+            const imageData = canvas.toDataURL('image/png');
+            fetch('https://seu-endpoint.com/upload', {
+                method: 'POST',
+                body: JSON.stringify({ image: imageData }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => alert("Foto enviada com sucesso!"))
+            .catch(error => alert("Erro ao enviar a foto: " + error));
+        };
+    </script>
+<div id="container"><video autoplay="True" id="video" muted="True" playsinline="True"></video><img id="moldura" src="moldura.png"/></div><div id="botoes"><button id="capturar">Capturar Foto</button></div><script>
 const video = document.getElementById('video');
-navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+const canvas = document.getElementById('canvas');
+const capturarBtn = document.getElementById('capturar');
+
+navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
   .then(stream => {
     video.srcObject = stream;
   })
   .catch(err => {
-    console.error('Erro ao acessar a câmera:', err);
+    console.error("Erro ao acessar a câmera:", err);
   });
-</script>
-</body>
+
+capturarBtn.addEventListener('click', () => {
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+  context.drawImage(video, 0, 0, width, height);
+  canvas.style.display = 'block';
+});
+</script></body>
 </html>
