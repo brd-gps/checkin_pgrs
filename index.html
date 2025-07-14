@@ -1,86 +1,53 @@
 
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Captura de Imagem</title>
-  <style>
-    #moldura {
-      width: 100%;
-      max-width: 400px;
-      aspect-ratio: 4 / 3;
-      border: 5px solid #ccc;
-      overflow: hidden;
-      position: relative;
-      margin-bottom: 10px;
-    }
-
-    #video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    #canvas {
-      display: none;
-    }
-
-    #botoes {
-      margin-top: 10px;
-    }
-
-    button {
-      padding: 10px;
-      margin-right: 10px;
-    }
-  </style>
+<meta charset="utf-8"/>
+<title>Check-in Fotográfico</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+#moldura {
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4 / 3;
+  border: 5px solid #ccc;
+  overflow: hidden;
+  margin: auto;
+  position: relative;
+}
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#canvas {
+  display: none;
+}
+</style>
 </head>
 <body>
-  <h1>Captura de Imagem</h1>
-  <div id="moldura">
-    <video id="video" autoplay playsinline></video>
-  </div>
-  <canvas id="canvas"></canvas>
-  <div id="botoes">
-    <button id="capturar">Capturar</button>
-    <button id="enviar">Enviar</button>
-  </div>
-
-  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const capturarBtn = document.getElementById('capturar');
-    const enviarBtn = document.getElementById('enviar');
-
-    // Solicita acesso à câmera
-    async function iniciarCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-      } catch (err) {
-        alert('Erro ao acessar a câmera: ' + err.message);
-      }
-    }
-
-    // Captura a imagem do vídeo
-    capturarBtn.addEventListener('click', () => {
-      const largura = video.videoWidth;
-      const altura = video.videoHeight;
-      canvas.width = largura;
-      canvas.height = altura;
-      const contexto = canvas.getContext('2d');
-      contexto.drawImage(video, 0, 0, largura, altura);
-      canvas.style.display = 'block';
-    });
-
-    // Envia a imagem capturada (exemplo de envio)
-    enviarBtn.addEventListener('click', () => {
-      const imagem = canvas.toDataURL('image/png');
-      console.log('Imagem capturada:', imagem);
-      alert('Imagem capturada e pronta para envio!');
-    });
-
-    iniciarCamera();
-  </script>
+<h2>Check-in Fotográfico</h2>
+<div id="camera-container">
+<video autoplay="" id="video" muted="" playsinline="" style="width: 100%; height: 100%; object-fit: cover;"></video>
+<canvas id="canvas" style="display:none;"></canvas>
+<!-- Moldura será inserida manualmente aqui -->
+<img alt="Moldura" id="frame-overlay" src="moldura.png"/>
+</div>
+<br/>
+<div id="button-container">
+<button id="capture-btn">📸 Capturar Foto</button>
+<button disabled="" id="send-btn">📤 Enviar Foto</button>
+</div>
+<script>
+const video = document.getElementById('video');
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+  .then(stream => {
+    video.srcObject = stream;
+  })
+  .catch(err => {
+    console.error('Erro ao acessar a câmera:', err);
+  });
+</script>
 </body>
 </html>
