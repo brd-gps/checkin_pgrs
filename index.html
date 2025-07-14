@@ -1,112 +1,128 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Check-in Fotográfico</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background-color: #f0f0f0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-    }
-    #camera-container {
-      position: relative;
-      width: 100%;
-      max-width: 400px;
-      aspect-ratio: 9/16;
-      margin-top: 20px;
-      background-color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #video, #frame-overlay {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    #button-container {
-      margin-top: 20px;
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-    }
-    #capture-btn, #send-btn {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #canvas {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Check-in Fotográfico</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+        #camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 9/16;
+            margin-top: 20px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #video, #frame-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Corrigido */
+        }
+        #button-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        #capture-btn, #send-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #canvas {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-  <h2>Check-in Fotográfico</h2>
-  <div id="camera-container">
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas" style="display:none;"></canvas>
-    <img id="frame-overlay" src="moldura.png" alt="Moldura" />
-  </div>
-  <br>
-  <div id="button-container">
-    <button id="capture-btn">📸 Capturar Foto</button>
-    <button id="send-btn" disabled>📤 Enviar Foto</button>
-  </div>
+    <h2>Check-in Fotográfico</h2>
+    <div id="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="frame-overlay" src="moldura.png" alt="Moldura" />
+    </div>
+    <br>
+    <div id="button-container">
+        <button id="capture-btn">📸 Capturar Foto</button>
+        <button id="send-btn" disabled>📤 Enviar Foto</button>
+    </div>
 
-  <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const captureBtn = document.getElementById('capture-btn');
-    const sendBtn = document.getElementById('send-btn');
-    const frame = document.getElementById('frame-overlay');
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('capture-btn');
+        const sendBtn = document.getElementById('send-btn');
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-      })
-      .catch(err => {
-        alert("Erro ao acessar a câmera: " + err);
-      });
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                alert("Erro ao acessar a câmera: " + err);
+            });
 
-    captureBtn.onclick = () => {
-      const videoWidth = video.videoWidth;
-      const videoHeight = video.videoHeight;
+        captureBtn.onclick = () => {
+            const container = document.getElementById('camera-container');
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
 
-      canvas.width = videoWidth;
-      canvas.height = videoHeight;
+            canvas.width = width;
+            canvas.height = height;
 
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
+            const ctx = canvas.getContext('2d');
 
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0, videoWidth, videoHeight);
-        video.style.display = 'none';
-        canvas.style.display = 'block';
-        sendBtn.disabled = false;
-      };
-      img.src = frame.src;
-    };
+            const videoAspect = video.videoWidth / video.videoHeight;
+            const canvasAspect = width / height;
 
-    sendBtn.onclick = () => {
-      const imageData = canvas.toDataURL('image/png');
-      fetch('https://seu-endpoint.com/upload', {
-        method: 'POST',
-        body: JSON.stringify({ image: imageData }),
-        headers: { 'Content-Type': 'application/json' }
-      })
-      .then(response => alert("Foto enviada com sucesso!"))
-      .catch(error => alert("Erro ao enviar a foto: " + error));
-    };
-  </script>
+            let sx, sy, sWidth, sHeight;
+
+            if (videoAspect > canvasAspect) {
+                sHeight = video.videoHeight;
+                sWidth = sHeight * canvasAspect;
+                sx = (video.videoWidth - sWidth) / 2;
+                sy = 0;
+            } else {
+                sWidth = video.videoWidth;
+                sHeight = sWidth / canvasAspect;
+                sx = 0;
+                sy = (video.videoHeight - sHeight) / 2;
+            }
+
+            ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, width, height);
+
+            const frame = document.getElementById('frame-overlay');
+            ctx.drawImage(frame, 0, 0, width, height);
+
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            sendBtn.disabled = false;
+        };
+
+        sendBtn.onclick = () => {
+            const imageData = canvas.toDataURL('image/png');
+            fetch('https://seu-endpoint.com/upload', {
+                method: 'POST',
+                body: JSON.stringify({ image: imageData }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => alert("Foto enviada com sucesso!"))
+            .catch(error => alert("Erro ao enviar a foto: " + error));
+        };
+    </script>
 </body>
 </html>
