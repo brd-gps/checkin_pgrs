@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,6 +16,7 @@
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
+            backgroud-color: #f0f0f0;
         }
         #camera-container {
             position: relative;
@@ -31,19 +33,20 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Corrigido */
+            object-fit: contain;
         }
         #button-container {
-            margin-top: 20px;
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
-        #capture-btn, #send-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+#capture-btn, #send-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
         #canvas {
             display: none;
         }
@@ -54,13 +57,14 @@
     <div id="camera-container">
         <video id="video" autoplay playsinline></video>
         <canvas id="canvas" style="display:none;"></canvas>
+        <!-- Moldura será inserida manualmente aqui -->
         <img id="frame-overlay" src="moldura.png" alt="Moldura" />
     </div>
     <br>
     <div id="button-container">
-        <button id="capture-btn">📸 Capturar Foto</button>
-        <button id="send-btn" disabled>📤 Enviar Foto</button>
-    </div>
+    <button id="capture-btn">📸 Capturar Foto</button>
+    <button id="send-btn" disabled>📤 Enviar Foto</button>
+</div>
 
     <script>
         const video = document.getElementById('video');
@@ -68,6 +72,7 @@
         const captureBtn = document.getElementById('capture-btn');
         const sendBtn = document.getElementById('send-btn');
 
+        // Acessar a câmera
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
@@ -76,43 +81,26 @@
                 alert("Erro ao acessar a câmera: " + err);
             });
 
+        // Capturar a imagem
         captureBtn.onclick = () => {
-            const container = document.getElementById('camera-container');
-            const width = container.offsetWidth;
-            const height = container.offsetHeight;
+    const width = video.offsetWidth;
+    const height = video.offsetHeight;
 
-            canvas.width = width;
-            canvas.height = height;
+    canvas.width = width;
+    canvas.height = height;
 
-            const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, width, height);
 
-            const videoAspect = video.videoWidth / video.videoHeight;
-            const canvasAspect = width / height;
+    const frame = document.getElementById('frame-overlay');
+    ctx.drawImage(frame, 0, 0, width, height);
 
-            let sx, sy, sWidth, sHeight;
+    video.style.display = 'none';
+    canvas.style.display = 'block';
+    sendBtn.disabled = false;
+};
 
-            if (videoAspect > canvasAspect) {
-                sHeight = video.videoHeight;
-                sWidth = sHeight * canvasAspect;
-                sx = (video.videoWidth - sWidth) / 2;
-                sy = 0;
-            } else {
-                sWidth = video.videoWidth;
-                sHeight = sWidth / canvasAspect;
-                sx = 0;
-                sy = (video.videoHeight - sHeight) / 2;
-            }
-
-            ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, width, height);
-
-            const frame = document.getElementById('frame-overlay');
-            ctx.drawImage(frame, 0, 0, width, height);
-
-            video.style.display = 'none';
-            canvas.style.display = 'block';
-            sendBtn.disabled = false;
-        };
-
+        // Enviar a imagem para o servidor (endpoint fictício)
         sendBtn.onclick = () => {
             const imageData = canvas.toDataURL('image/png');
             fetch('https://seu-endpoint.com/upload', {
