@@ -1,134 +1,83 @@
+
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Check-in Fotográfico</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body {
-            font-family: sans-serif;
-            text-align: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-        }
-        #camera-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            aspect-ratio: 9/16;
-            margin-top: 20px;
-            background-color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #video {
-            position: absolute;
-            width: auto;
-            height: 100%;
-            object-fit: cover;
-        }
-        #frame-overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            pointer-events: none;
-        }
-        #button-container {
-            margin-top: 20px;
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
-        #capture-btn, #send-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        #canvas {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check-in Sustentável</title>
+  <style>
+    body {
+      margin: 0;
+      background-image: url('moldura.png');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      font-family: Arial, sans-serif;
+    }
+    video, canvas {
+      display: none;
+      max-width: 100%;
+      height: auto;
+    }
+    #captura {
+      margin-bottom: 20px;
+    }
+    button {
+      font-size: 18px;
+      margin: 8px;
+      padding: 12px 24px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
 </head>
 <body>
-    <h2>Check-in Fotográfico</h2>
-    <div id="camera-container">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-        <img id="frame-overlay" src="moldura.png" alt="Moldura" />
-    </div>
-    <br>
-    <div id="button-container">
-        <button id="capture-btn">📸 Capturar Foto</button>
-        <button id="send-btn" disabled>📤 Enviar Foto</button>
-    </div>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
+  <div id="captura">
+    <button onclick="capturar()">📸 Capturar Foto</button>
+    <button onclick="enviar()">📤 Enviar Foto</button>
+  </div>
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const captureBtn = document.getElementById('capture-btn');
-        const sendBtn = document.getElementById('send-btn');
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
-        // Acessar a câmera frontal em dispositivos móveis
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: 'user',
-                width: { ideal: 720 },
-                height: { ideal: 1280 }
-            }
-        })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(err => {
-            alert("Erro ao acessar a câmera: " + err);
-        });
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+      .then((stream) => {
+        video.srcObject = stream;
+        video.style.display = 'block';
+      });
 
-        // Capturar a imagem com moldura corretamente alinhada
-        captureBtn.onclick = () => {
-            const frame = document.getElementById('frame-overlay');
-            const img = new Image();
-            img.src = frame.src;
+    function capturar() {
+      const largura = video.videoWidth;
+      const altura = video.videoHeight;
 
-            img.onload = () => {
-                const width = img.width;
-                const height = img.height;
+      canvas.width = largura;
+      canvas.height = altura;
 
-                canvas.width = width;
-                canvas.height = height;
+      ctx.drawImage(video, 0, 0, largura, altura);
 
-                const ctx = canvas.getContext('2d');
+      canvas.style.display = 'block';
+      video.style.display = 'none';
+    }
 
-                const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
-                const x = (width - video.videoWidth * scale) / 2;
-                const y = (height - video.videoHeight * scale) / 2;
-
-                ctx.drawImage(video, x, y, video.videoWidth * scale, video.videoHeight * scale);
-                ctx.drawImage(img, 0, 0, width, height);
-
-                video.style.display = 'none';
-                canvas.style.display = 'block';
-                sendBtn.disabled = false;
-            };
-        };
-
-        // Enviar a imagem para o servidor (endpoint fictício)
-        sendBtn.onclick = () => {
-            const imageData = canvas.toDataURL('image/png');
-            fetch('https://seu-endpoint.com/upload', {
-                method: 'POST',
-                body: JSON.stringify({ image: imageData }),
-                headers: { 'Content-Type': 'application/json' }
-            })
-            .then(response => alert("Foto enviada com sucesso!"))
-            .catch(error => alert("Erro ao enviar a foto: " + error));
-        };
-    </script>
+    function enviar() {
+      const imagem = canvas.toDataURL('image/png');
+      alert('Imagem capturada! (envio simulado)');
+      window.location.href = 'https://forms.office.com/';
+    }
+  </script>
 </body>
 </html>
