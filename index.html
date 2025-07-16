@@ -1,82 +1,100 @@
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Check-in Sustentável</title>
   <style>
     body {
       margin: 0;
-      background-image: url('moldura.png');
-      background-size: cover;
-      background-position: center;
+      padding: 0;
+      background: #000;
+      overflow: hidden;
+    }
+    .container {
+      position: relative;
+      width: 100vw;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: center;
-      font-family: Arial, sans-serif;
     }
     video, canvas {
-      display: none;
-      max-width: 100%;
-      height: auto;
+      position: absolute;
+      top: 19.4%;
+      left: 18.4%;
+      width: 63.2%;
+      height: 56%;
+      object-fit: cover;
+      z-index: 1;
     }
-    #captura {
-      margin-bottom: 20px;
+    .moldura {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .botoes {
+      position: absolute;
+      bottom: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 16px;
+      z-index: 3;
     }
     button {
-      font-size: 18px;
-      margin: 8px;
-      padding: 12px 24px;
-      border: none;
+      padding: 10px 16px;
+      font-size: 17px;
       background-color: #4CAF50;
       color: white;
+      border: none;
       border-radius: 8px;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
     }
   </style>
 </head>
 <body>
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas"></canvas>
-  <div id="captura">
-    <button onclick="capturar()">📸 Capturar Foto</button>
-    <button onclick="enviar()">📤 Enviar Foto</button>
+  <div class="container">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <img src="moldura.png" class="moldura" />
+    <div class="botoes">
+      <button onclick="capturarFoto()">📸 Capturar Foto</button>
+      <button onclick="enviarFoto()">📤 Enviar Foto</button>
+    </div>
   </div>
 
   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
 
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
       .then((stream) => {
         video.srcObject = stream;
-        video.style.display = 'block';
+      })
+      .catch((err) => {
+        alert("Erro ao acessar a câmera: " + err.message);
       });
 
-    function capturar() {
-      const largura = video.videoWidth;
-      const altura = video.videoHeight;
+    function capturarFoto() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.style.display = "block";
 
-      canvas.width = largura;
-      canvas.height = altura;
-
-      ctx.drawImage(video, 0, 0, largura, altura);
-
-      canvas.style.display = 'block';
-      video.style.display = 'none';
+      // Exibe o frame da câmera congelado por 1 segundo, depois volta à câmera
+      setTimeout(() => {
+        canvas.style.display = "none";
+      }, 1000);
     }
 
-    function enviar() {
-      const imagem = canvas.toDataURL('image/png');
-      alert('Imagem capturada! (envio simulado)');
-      window.location.href = 'https://forms.office.com/';
+    function enviarFoto() {
+      const imagem = canvas.toDataURL("image/png");
+      const novaJanela = window.open();
+      novaJanela.document.write("<img src='" + imagem + "' style='width:100%;'>");
     }
   </script>
 </body>
